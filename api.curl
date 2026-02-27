@@ -1,0 +1,91 @@
+# Chatbot API – cURL examples
+# Base URL (change port if needed)
+BASE=http://localhost:3000
+
+# =============================================================================
+# 1. POST /api/chat/input – Submit user/assistant messages
+# =============================================================================
+# Body: messages[] with role (user|assistant) and content (string)
+# Returns: 200 { "success": true } or 400/429 + { "success": false, "message": "..." }
+
+curl -X POST "${BASE}/api/chat/input" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      { "role": "user", "content": "Hello, what can you do?" }
+    ]
+  }'
+
+# With conversation history (last 5 used for /output):
+# curl -X POST "${BASE}/api/chat/input" \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "messages": [
+#       { "role": "user", "content": "Hi" },
+#       { "role": "assistant", "content": "Hello! How can I help?" },
+#       { "role": "user", "content": "Tell me a short joke" }
+#     ]
+#   }'
+
+# =============================================================================
+# 2. POST /api/chat/output – Stream AI response (SSE)
+# =============================================================================
+# Body: same as /input
+# Returns: text/event-stream. First event: data: {"started":true}. Then data: {"content":"..."} chunks, then data: [DONE]
+
+curl -X POST "${BASE}/api/chat/output" \
+  -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
+  -d '{
+    "messages": [
+      { "role": "user", "content": "Say hello in one sentence." }
+    ]
+  }' \
+  --no-buffer
+
+# With conversation history:
+# curl -X POST "${BASE}/api/chat/output" \
+#   -H "Content-Type: application/json" \
+#   -H "Accept: text/event-stream" \
+#   -d '{
+#     "messages": [
+#       { "role": "user", "content": "My name is Alex." },
+#       { "role": "assistant", "content": "Nice to meet you, Alex!" },
+#       { "role": "user", "content": "What is my name?" }
+#     ]
+#   }' \
+#   --no-buffer
+
+# =============================================================================
+# Validation error example (400):
+# curl -X POST "${BASE}/api/chat/input" \
+#   -H "Content-Type: application/json" \
+#   -d '{"messages": []}'
+#
+# Rate limit (30 req/min) – 429:
+# After 30 requests in a minute you get { "success": false, "message": "Too many requests..." }
+
+# =============================================================================
+# 3. POST /api/email/test – Send test email (dummy lead to EMAIL_TO)
+# =============================================================================
+# No body required. Returns 200 { "success": true } or 500 on SMTP error.
+
+curl -X POST "${BASE}/api/email/test" \
+  -H "Content-Type: application/json"
+
+# =============================================================================
+# 4. POST /api/email/lead – Send lead email with custom data
+# =============================================================================
+# Body: name (required), email (required), projectSummary (required), company, budget, timeline (optional)
+# Returns 200 { "success": true } or 400 (validation) / 500 (SMTP error)
+
+curl -X POST "${BASE}/api/email/lead" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "projectSummary": "Need a chatbot for customer support",
+    "company": "Acme Inc",
+    "budget": "$10k",
+    "timeline": "3 months"
+  }'
