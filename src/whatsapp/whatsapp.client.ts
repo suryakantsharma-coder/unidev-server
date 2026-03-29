@@ -98,7 +98,7 @@ export async function requestWhatsAppLogin(
       success: false,
       code: "pending",
       message:
-        "A QR was already issued. Scan it with WhatsApp, or call POST /api/whatsapp/login with { \"force\": true } to generate a new QR.",
+        'A QR was already issued. Scan it with WhatsApp, or call POST /api/whatsapp/login with { "force": true } to generate a new QR.',
     };
   }
 
@@ -120,11 +120,7 @@ async function runLoginFlow(): Promise<WhatsAppLoginResult> {
       ...(executablePath ? { executablePath } : {}),
       headless: true,
       dumpio: false,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-      ],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
   });
 
