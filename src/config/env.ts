@@ -11,6 +11,8 @@ const envSchema = {
   RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX ?? '30',
   /** When set (e.g. 1 or true), log all request/response data for testing */
   LOG_TEST_DATA: process.env.LOG_TEST_DATA ?? '',
+  WHATSAPP_ENABLED: process.env.WHATSAPP_ENABLED ?? '',
+  CHROME_PATH: process.env.CHROME_PATH ?? '',
 } as const;
 
 export const env = {
@@ -20,4 +22,6 @@ export const env = {
   RATE_LIMIT_MAX: parseInt(envSchema.RATE_LIMIT_MAX, 10),
   isProduction: envSchema.NODE_ENV === 'production',
   logTestData: /^(1|true|yes)$/i.test(envSchema.LOG_TEST_DATA),
+  whatsappEnabled: /^(1|true|yes)$/i.test(envSchema.WHATSAPP_ENABLED),
+  chromePath: envSchema.CHROME_PATH || undefined,
 };

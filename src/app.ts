@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import chatRoutes from "./routes/chat.routes";
 import emailRoutes from "./routes/email.routes";
+import { whatsappRoutes } from "./whatsapp";
 import { apiRateLimiter } from "./middlewares/rateLimit.middleware";
 import {
   errorMiddleware,
@@ -24,10 +25,11 @@ app.use(
   }),
 );
 app.use(morgan(env.isProduction ? "combined" : "dev"));
-app.use(express.json({ limit: "64kb" }));
+app.use(express.json({ limit: "1mb" }));
 
 app.use("/api/chat", apiRateLimiter, chatRoutes);
 app.use("/api/email", apiRateLimiter, emailRoutes);
+app.use("/api/whatsapp", apiRateLimiter, whatsappRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
