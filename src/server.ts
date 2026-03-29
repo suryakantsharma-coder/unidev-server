@@ -1,11 +1,13 @@
-import app from './app';
-import { env } from './config/env';
+import app from "./app";
+import { env } from "./config/env";
 
-process.on('uncaughtException', () => {
+app.set("trust proxy", 1);
+
+process.on("uncaughtException", () => {
   process.exitCode = 1;
 });
 
-process.on('unhandledRejection', () => {
+process.on("unhandledRejection", () => {
   process.exitCode = 1;
 });
 
