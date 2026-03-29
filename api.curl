@@ -89,3 +89,21 @@ curl -X POST "${BASE}/api/email/lead" \
     "budget": "$10k",
     "timeline": "3 months"
   }'
+
+# =============================================================================
+# 5. WhatsApp (WHATSAPP_ENABLED=1 in .env)
+# =============================================================================
+# GET /api/whatsapp/health — { ok, whatsappReady }
+# POST /api/whatsapp/login — on-demand QR (returns qrDataUrl) or authenticated: true
+# POST /api/whatsapp/login with { "force": true } — new QR after logout / stuck
+# POST /api/whatsapp/send-message — { "phone": "919876543210", "message": "Hi" }
+
+curl -X GET "${BASE}/api/whatsapp/health"
+
+curl -X POST "${BASE}/api/whatsapp/login" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# curl -X POST "${BASE}/api/whatsapp/login" \
+#   -H "Content-Type: application/json" \
+#   -d '{"force":true}'
