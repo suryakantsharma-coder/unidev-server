@@ -14,8 +14,7 @@ import { env } from "./config/env";
 
 const app = express();
 
-// ✅ FIX THIS FIRST (before rate limiter)
-app.set("trust proxy", 1);
+app.set('trust proxy', 1);
 
 const rateLimit = require("express-rate-limit");
 
