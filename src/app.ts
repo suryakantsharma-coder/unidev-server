@@ -14,6 +14,18 @@ import { env } from "./config/env";
 
 const app = express();
 
+// ✅ FIX THIS FIRST (before rate limiter)
+app.set("trust proxy", 1);
+
+const rateLimit = require("express-rate-limit");
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  }),
+);
+
 app.use(helmet());
 app.use(
   cors({
