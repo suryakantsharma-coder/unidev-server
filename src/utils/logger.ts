@@ -29,3 +29,21 @@ export function logChatInput(messages: Array<{ role: string; content: string }>)
 export function logChatOutput(content: string): void {
   process.stdout.write(`${prefix} CHAT OUTPUT (from chatbot):\n${content}\n`);
 }
+
+/** Always log realtime payload received from frontend. */
+export function logRealtimeInput(label: string, data: unknown): void {
+  const payload =
+    typeof data === "object" && data !== null
+      ? JSON.stringify(data, null, 2)
+      : String(data);
+  process.stdout.write(`${prefix} REALTIME INPUT (${label}):\n${payload}\n`);
+}
+
+/** Always log realtime payload sent back to frontend. */
+export function logRealtimeOutput(label: string, data: unknown): void {
+  const payload =
+    typeof data === "object" && data !== null
+      ? JSON.stringify(data, null, 2)
+      : String(data);
+  process.stdout.write(`${prefix} REALTIME OUTPUT (${label}):\n${payload}\n`);
+}
