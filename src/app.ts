@@ -30,7 +30,6 @@ app.use(helmet());
 app.use(
   cors({
     origin: "https://www.unidevsolutions.in",
-    // origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
