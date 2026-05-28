@@ -9,6 +9,8 @@ import {
 } from "../utils/logger";
 
 const router = Router();
+const VOICE_LEADS_TO = process.env.VOICE_LEADS_TO || "hello@unidevsolutions.in";
+const VOICE_LEADS_SUBJECT = "voice agent leads";
 
 type CreateRealtimeSessionBody = {
   instructions?: string;
@@ -402,15 +404,15 @@ router.post("/lead", async (req, res, next) => {
     logRealtimeOutput("lead", {
       traceId,
       success: true,
-      sentTo: "hello@unidevsolution.in",
-      subject: "voice agent leads",
+      sentTo: VOICE_LEADS_TO,
+      subject: VOICE_LEADS_SUBJECT,
     });
 
     res.status(200).json({
       success: true,
       message: "Voice lead email sent",
-      sent_to: "hello@unidevsolution.in",
-      subject: "voice agent leads",
+      sent_to: VOICE_LEADS_TO,
+      subject: VOICE_LEADS_SUBJECT,
     });
   } catch (error) {
     next(error);
@@ -423,8 +425,8 @@ router.post("/lead/test", async (_req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Voice lead test email sent",
-      sent_to: "hello@unidevsolution.in",
-      subject: "voice agent leads",
+      sent_to: VOICE_LEADS_TO,
+      subject: VOICE_LEADS_SUBJECT,
     });
   } catch (error) {
     next(error);

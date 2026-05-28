@@ -71,7 +71,7 @@ export async function sendTestLeadEmail(): Promise<void> {
   await sendLeadEmail(TEST_LEAD, { isTest: true });
 }
 
-const VOICE_LEADS_TO = "hello@unidevsolution.in";
+const VOICE_LEADS_TO = process.env.VOICE_LEADS_TO || "hello@unidevsolutions.in";
 const VOICE_LEADS_SUBJECT = "voice agent leads";
 
 /** Send voice-agent lead email to dedicated Unidev inbox. */
