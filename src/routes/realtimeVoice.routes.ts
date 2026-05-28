@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { env } from "../config/env";
+import { sendVoiceLeadEmail, sendVoiceTestLeadEmail } from "../services/email.service";
 import {
   logRealtimeInput,
   logRealtimeOutput,
@@ -18,6 +19,15 @@ type RealtimeCallBody = {
   sdp?: string;
   instructions?: string;
   voice?: string;
+};
+
+type VoiceLeadBody = {
+  name?: string;
+  email?: string;
+  company?: string;
+  budget?: string;
+  timeline?: string;
+  projectSummary?: string;
 };
 
 const VISUAL_LIMITATION_INSTRUCTIONS =
@@ -351,6 +361,72 @@ router.post("/calls", async (req, res, next) => {
     logTest("realtimeVoice.calls.exception", {
       error: (error as Error).message,
     });
+    next(error);
+  }
+});
+
+router.post("/lead", async (req, res, next) => {
+  try {
+    const body = (req.body ?? {}) as VoiceLeadBody;
+    const traceId = `rvlead_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    if (!body.name || !body.email || !body.projectSummary) {
+      res.status(400).json({
+        error: "Missing required fields: name, email, projectSummary",
+      });
+      return;
+    }
+
+    await sendVoiceLeadEmail({
+      name: body.name,
+      email: body.email,
+      company: body.company,
+      budget: body.budget,
+      timeline: body.timeline,
+      projectSummary: body.projectSummary,
+    });
+
+    logRealtimeInput("lead", {
+      traceId,
+      method: req.method,
+      path: req.originalUrl,
+      body: {
+        name: body.name,
+        email: body.email,
+        company: body.company ?? "",
+        budget: body.budget ?? "",
+        timeline: body.timeline ?? "",
+        projectSummary: body.projectSummary,
+      },
+    });
+    logRealtimeOutput("lead", {
+      traceId,
+      success: true,
+      sentTo: "hello@unidevsolution.in",
+      subject: "voice agent leads",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Voice lead email sent",
+      sent_to: "hello@unidevsolution.in",
+      subject: "voice agent leads",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/lead/test", async (_req, res, next) => {
+  try {
+    await sendVoiceTestLeadEmail();
+    res.status(200).json({
+      success: true,
+      message: "Voice lead test email sent",
+      sent_to: "hello@unidevsolution.in",
+      subject: "voice agent leads",
+    });
+  } catch (error) {
     next(error);
   }
 });
