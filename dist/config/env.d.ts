@@ -1,0 +1,35 @@
+export declare const env: {
+    PORT: number;
+    RATE_LIMIT_WINDOW_MS: number;
+    RATE_LIMIT_MAX: number;
+    MAILTRAP_PORT: number;
+    isProduction: boolean;
+    logTestData: boolean;
+    realtimeEnableInputTranscription: boolean;
+    whatsappEnabled: boolean;
+    sequenceTestMode: boolean;
+    chromePath: string | undefined;
+    NODE_ENV: string;
+    MONGODB_URI: string;
+    OPENAI_API_KEY: string;
+    REALTIME_MODEL: string;
+    REALTIME_DEFAULT_VOICE: string;
+    REALTIME_ENABLE_INPUT_TRANSCRIPTION: string;
+    REALTIME_INPUT_TRANSCRIPTION_MODEL: string;
+    LOG_TEST_DATA: string;
+    WHATSAPP_ENABLED: string;
+    CHROME_PATH: string;
+    JWT_SECRET: string;
+    JWT_EXPIRES_IN: string;
+    MAILTRAP_HOST: string;
+    MAILTRAP_USER: string;
+    MAILTRAP_PASS: string;
+    MAILTRAP_FROM: string;
+    WHATSAPP_PHONE_NUMBER_ID: string;
+    WHATSAPP_BUSINESS_ACCOUNT_ID: string;
+    WHATSAPP_ACCESS_TOKEN: string;
+    WHATSAPP_VERIFY_TOKEN: string;
+    WHATSAPP_APP_SECRET: string;
+    SEQUENCE_TEST_MODE: string;
+};
+//# sourceMappingURL=env.d.ts.map
