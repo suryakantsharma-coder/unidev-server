@@ -52,38 +52,30 @@ export async function sendEmail(req: Request, res: Response, next: NextFunction)
       sentBy,
     });
 
-    // Auto follow-up: spin up a sequence in the background using the same email as step 1
-    let sequence = null;
-    if (input.autoFollowUp) {
-      sequence = await startSequence({
-        leadId:              input.leadId,
-        to:                  input.to,
-        cc:                  input.cc,
-        subject:             input.subject,
-        body:                input.body,
-        tone:                input.tone,
-        language:            input.language,
-        leadContext:         (input.leadContext ?? {}) as LeadContext,
-        createdBy:           sentBy,
-        initialAlreadySent:  true, // initial email already sent above — don't resend
-      });
-    }
-
+    // Respond immediately — don't wait for AI sequence generation
     res.status(201).json({
       success: true,
       data: record,
-      ...(sequence ? {
-        autoFollowUp: {
-          enabled:    true,
-          sequenceId: String(sequence._id),
-          schedule:   sequence.steps.map(s => ({
-            step:        s.stepNumber,
-            label:       s.label,
-            scheduledAt: s.scheduledAt,
-          })),
-        },
-      } : { autoFollowUp: { enabled: false } }),
+      autoFollowUp: { enabled: !!input.autoFollowUp, status: input.autoFollowUp ? 'scheduling' : 'disabled' },
     });
+
+    // Auto follow-up: generate in background after response is sent (avoids timeout)
+    if (input.autoFollowUp) {
+      startSequence({
+        leadId:             input.leadId,
+        to:                 input.to,
+        cc:                 input.cc,
+        subject:            input.subject,
+        body:               input.body,
+        tone:               input.tone,
+        language:           input.language,
+        leadContext:        (input.leadContext ?? {}) as LeadContext,
+        createdBy:          sentBy,
+        initialAlreadySent: true,
+      }).catch(err => {
+        process.stderr.write(`[AutoFollowUp] Failed to create sequence: ${err}\n`);
+      });
+    }
   } catch (err) {
     next(err);
   }

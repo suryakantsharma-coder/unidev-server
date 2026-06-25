@@ -84,10 +84,15 @@ async function sendEmail(req, res, next) {
             leadId: input.leadId,
             sentBy,
         });
-        // Auto follow-up: spin up a sequence in the background using the same email as step 1
-        let sequence = null;
+        // Respond immediately — don't wait for AI sequence generation
+        res.status(201).json({
+            success: true,
+            data: record,
+            autoFollowUp: { enabled: !!input.autoFollowUp, status: input.autoFollowUp ? 'scheduling' : 'disabled' },
+        });
+        // Auto follow-up: generate in background after response is sent (avoids timeout)
         if (input.autoFollowUp) {
-            sequence = await (0, emailSequence_service_1.startSequence)({
+            (0, emailSequence_service_1.startSequence)({
                 leadId: input.leadId,
                 to: input.to,
                 cc: input.cc,
@@ -97,24 +102,11 @@ async function sendEmail(req, res, next) {
                 language: input.language,
                 leadContext: (input.leadContext ?? {}),
                 createdBy: sentBy,
-                initialAlreadySent: true, // initial email already sent above — don't resend
+                initialAlreadySent: true,
+            }).catch(err => {
+                process.stderr.write(`[AutoFollowUp] Failed to create sequence: ${err}\n`);
             });
         }
-        res.status(201).json({
-            success: true,
-            data: record,
-            ...(sequence ? {
-                autoFollowUp: {
-                    enabled: true,
-                    sequenceId: String(sequence._id),
-                    schedule: sequence.steps.map(s => ({
-                        step: s.stepNumber,
-                        label: s.label,
-                        scheduledAt: s.scheduledAt,
-                    })),
-                },
-            } : { autoFollowUp: { enabled: false } }),
-        });
     }
     catch (err) {
         next(err);
