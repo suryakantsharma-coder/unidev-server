@@ -49,7 +49,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // handle all preflight OPTIONS requests
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy:   { policy: "cross-origin" },
+    crossOriginOpenerPolicy:     false,
+    crossOriginEmbedderPolicy:   false,
+  }),
+);
 
 const rateLimit = require("express-rate-limit");
 app.use(
