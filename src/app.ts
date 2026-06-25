@@ -30,30 +30,32 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-const rateLimit = require("express-rate-limit");
+const corsOptions = {
+  origin: [
+    "https://www.unidevsolutions.in",
+    "https://unidevsolutions.in",
+    "https://dashboard-unidev.vercel.app",
+    "https://www.api.unidevsolutions.in",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
 
+// CORS and preflight must come before everything else
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // handle all preflight OPTIONS requests
+
+app.use(helmet());
+
+const rateLimit = require("express-rate-limit");
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-  }),
-);
-
-app.use(helmet());
-app.use(
-  cors({
-    origin: [
-      "https://www.unidevsolutions.in",
-      "https://unidevsolutions.in",
-      "https://dashboard-unidev.vercel.app",
-      "https://www.api.unidevsolutions.in",
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    optionsSuccessStatus: 200,
   }),
 );
 app.use(morgan(env.isProduction ? "combined" : "dev"));
