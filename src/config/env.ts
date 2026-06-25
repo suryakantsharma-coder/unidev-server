@@ -24,12 +24,9 @@ const envSchema = {
   JWT_SECRET: process.env.JWT_SECRET ?? 'change_this_secret_in_production',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? '7d',
 
-  // Mailtrap (dashboard email sending)
-  MAILTRAP_HOST: process.env.MAILTRAP_HOST ?? 'sandbox.smtp.mailtrap.io',
-  MAILTRAP_PORT: process.env.MAILTRAP_PORT ?? '2525',
-  MAILTRAP_USER: process.env.MAILTRAP_USER ?? '',
-  MAILTRAP_PASS: process.env.MAILTRAP_PASS ?? '',
-  MAILTRAP_FROM: process.env.MAILTRAP_FROM ?? 'no-reply@unidevsolutions.in',
+  // Mailtrap (dashboard email sending — HTTP API, not SMTP)
+  MAILTRAP_API_KEY: process.env.MAILTRAP_API_KEY ?? '',
+  MAILTRAP_FROM:    process.env.MAILTRAP_FROM    ?? 'no-reply@unidevsolutions.in',
 
   // WhatsApp Business Cloud API
   WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID ?? '',
@@ -47,7 +44,6 @@ export const env = {
   PORT: parseInt(envSchema.PORT, 10),
   RATE_LIMIT_WINDOW_MS: parseInt(envSchema.RATE_LIMIT_WINDOW_MS, 10),
   RATE_LIMIT_MAX: parseInt(envSchema.RATE_LIMIT_MAX, 10),
-  MAILTRAP_PORT: parseInt(envSchema.MAILTRAP_PORT, 10),
   isProduction: envSchema.NODE_ENV === 'production',
   logTestData: /^(1|true|yes)$/i.test(envSchema.LOG_TEST_DATA),
   realtimeEnableInputTranscription: /^(1|true|yes)$/i.test(

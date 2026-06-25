@@ -2,7 +2,6 @@ export declare const env: {
     PORT: number;
     RATE_LIMIT_WINDOW_MS: number;
     RATE_LIMIT_MAX: number;
-    MAILTRAP_PORT: number;
     isProduction: boolean;
     logTestData: boolean;
     realtimeEnableInputTranscription: boolean;
@@ -21,9 +20,7 @@ export declare const env: {
     CHROME_PATH: string;
     JWT_SECRET: string;
     JWT_EXPIRES_IN: string;
-    MAILTRAP_HOST: string;
-    MAILTRAP_USER: string;
-    MAILTRAP_PASS: string;
+    MAILTRAP_API_KEY: string;
     MAILTRAP_FROM: string;
     WHATSAPP_PHONE_NUMBER_ID: string;
     WHATSAPP_BUSINESS_ACCOUNT_ID: string;

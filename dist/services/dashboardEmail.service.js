@@ -1,35 +1,48 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendDashboardEmail = sendDashboardEmail;
 exports.listSentEmails = listSentEmails;
 exports.getSentEmail = getSentEmail;
-const nodemailer_1 = __importDefault(require("nodemailer"));
 const env_1 = require("../config/env");
 const SentEmail_model_1 = require("../models/SentEmail.model");
-function createMailtrapTransport() {
-    return nodemailer_1.default.createTransport({
-        host: env_1.env.MAILTRAP_HOST,
-        port: env_1.env.MAILTRAP_PORT,
-        auth: {
-            user: env_1.env.MAILTRAP_USER,
-            pass: env_1.env.MAILTRAP_PASS,
+async function sendViaMailtrapApi(opts) {
+    const toAddresses = opts.to.map(e => ({ email: e }));
+    const ccAddresses = opts.cc?.map(e => ({ email: e }));
+    const bccAddresses = opts.bcc?.map(e => ({ email: e }));
+    const body = {
+        from: { email: opts.from },
+        to: toAddresses,
+        subject: opts.subject,
+        html: opts.html,
+        text: opts.text,
+    };
+    if (ccAddresses?.length)
+        body.cc = ccAddresses;
+    if (bccAddresses?.length)
+        body.bcc = bccAddresses;
+    const res = await fetch('https://send.api.mailtrap.io/api/send', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${env_1.env.MAILTRAP_API_KEY}`,
+            'Content-Type': 'application/json',
         },
+        body: JSON.stringify(body),
     });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Mailtrap API ${res.status}: ${text}`);
+    }
 }
 async function sendDashboardEmail(input) {
     const from = env_1.env.MAILTRAP_FROM;
-    const transporter = createMailtrapTransport();
     let status = 'sent';
     let errorMessage;
     try {
-        await transporter.sendMail({
+        await sendViaMailtrapApi({
             from,
-            to: input.to.join(', '),
-            cc: input.cc?.join(', '),
-            bcc: input.bcc?.join(', '),
+            to: input.to,
+            cc: input.cc,
+            bcc: input.bcc,
             subject: input.subject,
             html: input.body,
             text: input.body.replace(/<[^>]*>/g, ''),

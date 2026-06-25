@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 import { EmailSequence, IEmailSequence } from '../models/EmailSequence.model';
 import { generateContent, LeadContext, ContentTone } from './aiContent.service';
@@ -43,12 +42,35 @@ const STEP_INSTRUCTIONS = [
 ];
 
 
-function mailtrapTransport() {
-  return nodemailer.createTransport({
-    host: env.MAILTRAP_HOST,
-    port: env.MAILTRAP_PORT,
-    auth: { user: env.MAILTRAP_USER, pass: env.MAILTRAP_PASS },
+async function sendViaMailtrapApi(opts: {
+  to: string[];
+  cc?: string[];
+  subject: string;
+  html: string;
+  text: string;
+}) {
+  const body: Record<string, unknown> = {
+    from:    { email: env.MAILTRAP_FROM },
+    to:      opts.to.map(e => ({ email: e })),
+    subject: opts.subject,
+    html:    opts.html,
+    text:    opts.text,
+  };
+  if (opts.cc?.length) body.cc = opts.cc.map(e => ({ email: e }));
+
+  const res = await fetch('https://send.api.mailtrap.io/api/send', {
+    method:  'POST',
+    headers: {
+      'Authorization': `Bearer ${env.MAILTRAP_API_KEY}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify(body),
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Mailtrap API ${res.status}: ${text}`);
+  }
 }
 
 export interface StartSequenceInput {
@@ -270,9 +292,8 @@ export async function cancelSequence(id: string) {
 // Called by the cron job — processes all due pending steps across active sequences.
 // Uses atomic findOneAndUpdate per step to prevent double-sends across cron ticks.
 export async function processDueSteps(): Promise<{ processed: number; errors: number }> {
-  const now       = new Date();
-  const transport = mailtrapTransport();
-  let processed   = 0;
+  const now     = new Date();
+  let processed = 0;
   let errors      = 0;
 
   // Keep pulling one claimable step at a time until none remain.
@@ -301,10 +322,9 @@ export async function processDueSteps(): Promise<{ processed: number; errors: nu
     let errorMessage: string | undefined;
 
     try {
-      await transport.sendMail({
-        from:    env.MAILTRAP_FROM,
-        to:      seq.to.join(', '),
-        cc:      seq.cc?.join(', '),
+      await sendViaMailtrapApi({
+        to:      seq.to,
+        cc:      seq.cc,
         subject: step.subject,
         html:    step.body,
         text:    step.body.replace(/<[^>]*>/g, ''),

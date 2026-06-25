@@ -1,7 +1,4 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startSequence = startSequence;
 exports.getSequence = getSequence;
@@ -11,7 +8,6 @@ exports.listProgress = listProgress;
 exports.getProgressById = getProgressById;
 exports.cancelSequence = cancelSequence;
 exports.processDueSteps = processDueSteps;
-const nodemailer_1 = __importDefault(require("nodemailer"));
 const env_1 = require("../config/env");
 const EmailSequence_model_1 = require("../models/EmailSequence.model");
 const aiContent_service_1 = require("./aiContent.service");
@@ -51,12 +47,28 @@ const STEP_INSTRUCTIONS = [
     'Third follow-up. Be honest — mention this is your third attempt and you do not want to be annoying. Offer to step back if now is not the right time.',
     'Final follow-up. Let them know this is your last email. Keep it ultra short. Leave the door open for future contact.',
 ];
-function mailtrapTransport() {
-    return nodemailer_1.default.createTransport({
-        host: env_1.env.MAILTRAP_HOST,
-        port: env_1.env.MAILTRAP_PORT,
-        auth: { user: env_1.env.MAILTRAP_USER, pass: env_1.env.MAILTRAP_PASS },
+async function sendViaMailtrapApi(opts) {
+    const body = {
+        from: { email: env_1.env.MAILTRAP_FROM },
+        to: opts.to.map(e => ({ email: e })),
+        subject: opts.subject,
+        html: opts.html,
+        text: opts.text,
+    };
+    if (opts.cc?.length)
+        body.cc = opts.cc.map(e => ({ email: e }));
+    const res = await fetch('https://send.api.mailtrap.io/api/send', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${env_1.env.MAILTRAP_API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
     });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Mailtrap API ${res.status}: ${text}`);
+    }
 }
 async function startSequence(input) {
     const tone = input.tone ?? 'professional';
@@ -234,7 +246,6 @@ async function cancelSequence(id) {
 // Uses atomic findOneAndUpdate per step to prevent double-sends across cron ticks.
 async function processDueSteps() {
     const now = new Date();
-    const transport = mailtrapTransport();
     let processed = 0;
     let errors = 0;
     // Keep pulling one claimable step at a time until none remain.
@@ -257,10 +268,9 @@ async function processDueSteps() {
         let newStatus = 'sent';
         let errorMessage;
         try {
-            await transport.sendMail({
-                from: env_1.env.MAILTRAP_FROM,
-                to: seq.to.join(', '),
-                cc: seq.cc?.join(', '),
+            await sendViaMailtrapApi({
+                to: seq.to,
+                cc: seq.cc,
                 subject: step.subject,
                 html: step.body,
                 text: step.body.replace(/<[^>]*>/g, ''),

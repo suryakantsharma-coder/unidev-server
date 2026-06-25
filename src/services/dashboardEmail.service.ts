@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 import { SentEmail } from '../models/SentEmail.model';
 
@@ -12,30 +11,56 @@ export interface SendEmailInput {
   leadId?: string;
 }
 
-function createMailtrapTransport() {
-  return nodemailer.createTransport({
-    host: env.MAILTRAP_HOST,
-    port: env.MAILTRAP_PORT,
-    auth: {
-      user: env.MAILTRAP_USER,
-      pass: env.MAILTRAP_PASS,
+async function sendViaMailtrapApi(opts: {
+  from: string;
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  subject: string;
+  html: string;
+  text: string;
+}) {
+  const toAddresses  = opts.to.map(e  => ({ email: e }));
+  const ccAddresses  = opts.cc?.map(e  => ({ email: e }));
+  const bccAddresses = opts.bcc?.map(e => ({ email: e }));
+
+  const body: Record<string, unknown> = {
+    from:    { email: opts.from },
+    to:      toAddresses,
+    subject: opts.subject,
+    html:    opts.html,
+    text:    opts.text,
+  };
+  if (ccAddresses?.length)  body.cc  = ccAddresses;
+  if (bccAddresses?.length) body.bcc = bccAddresses;
+
+  const res = await fetch('https://send.api.mailtrap.io/api/send', {
+    method:  'POST',
+    headers: {
+      'Authorization': `Bearer ${env.MAILTRAP_API_KEY}`,
+      'Content-Type':  'application/json',
     },
+    body: JSON.stringify(body),
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Mailtrap API ${res.status}: ${text}`);
+  }
 }
 
 export async function sendDashboardEmail(input: SendEmailInput) {
   const from = env.MAILTRAP_FROM;
-  const transporter = createMailtrapTransport();
 
   let status: 'sent' | 'failed' = 'sent';
   let errorMessage: string | undefined;
 
   try {
-    await transporter.sendMail({
+    await sendViaMailtrapApi({
       from,
-      to:      input.to.join(', '),
-      cc:      input.cc?.join(', '),
-      bcc:     input.bcc?.join(', '),
+      to:      input.to,
+      cc:      input.cc,
+      bcc:     input.bcc,
       subject: input.subject,
       html:    input.body,
       text:    input.body.replace(/<[^>]*>/g, ''),
