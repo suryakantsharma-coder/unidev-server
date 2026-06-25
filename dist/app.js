@@ -80,12 +80,12 @@ app.use("/api/dashboard", rateLimit_middleware_1.apiRateLimiter, dashboard_route
 // Lead Management
 app.use("/api/categories", rateLimit_middleware_1.apiRateLimiter, category_routes_1.default);
 app.use("/api/leads", rateLimit_middleware_1.apiRateLimiter, lead_routes_1.default);
-// Dashboard Email
-app.use("/api/emails", rateLimit_middleware_1.apiRateLimiter, dashboardEmail_routes_1.default);
+// Dashboard Email (renamed from /emails to avoid ad blocker false positives)
+app.use("/api/mail", rateLimit_middleware_1.apiRateLimiter, dashboardEmail_routes_1.default);
 // AI Content Generator
 app.use("/api/ai", rateLimit_middleware_1.apiRateLimiter, aiContent_routes_1.default);
 // Email Sequences (drip follow-up)
-app.use("/api/email-sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
+app.use("/api/sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
 app.use(error_middleware_1.notFoundMiddleware);
 app.use(error_middleware_1.errorMiddleware);
 exports.default = app;

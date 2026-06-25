@@ -96,14 +96,14 @@ app.use("/api/dashboard", apiRateLimiter, dashboardRoutes);
 app.use("/api/categories", apiRateLimiter, categoryRoutes);
 app.use("/api/leads", apiRateLimiter, leadRoutes);
 
-// Dashboard Email
-app.use("/api/emails", apiRateLimiter, dashboardEmailRoutes);
+// Dashboard Email (renamed from /emails to avoid ad blocker false positives)
+app.use("/api/mail", apiRateLimiter, dashboardEmailRoutes);
 
 // AI Content Generator
 app.use("/api/ai", apiRateLimiter, aiContentRoutes);
 
 // Email Sequences (drip follow-up)
-app.use("/api/email-sequences", apiRateLimiter, emailSequenceRoutes);
+app.use("/api/sequences", apiRateLimiter, emailSequenceRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
