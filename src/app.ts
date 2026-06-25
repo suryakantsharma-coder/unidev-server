@@ -35,6 +35,7 @@ const corsOptions = {
     "https://www.unidevsolutions.in",
     "https://unidevsolutions.in",
     "https://dashboard-unidev.vercel.app",
+    "https://api.unidevsolutions.in",
     "https://www.api.unidevsolutions.in",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
