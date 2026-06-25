@@ -42,7 +42,7 @@ app.use(
 app.use(helmet());
 app.use(
   cors({
-    origin: ["https://www.unidevsolutions.in", "http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: ["https://www.unidevsolutions.in", "https://dashboard-unidev.vercel.app", "http://localhost:3000", "http://127.0.0.1:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
