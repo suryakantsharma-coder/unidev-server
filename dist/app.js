@@ -23,22 +23,33 @@ const category_routes_1 = __importDefault(require("./routes/category.routes"));
 const lead_routes_1 = __importDefault(require("./routes/lead.routes"));
 const dashboardEmail_routes_1 = __importDefault(require("./routes/dashboardEmail.routes"));
 const aiContent_routes_1 = __importDefault(require("./routes/aiContent.routes"));
+const taskAgentVoice_routes_1 = __importDefault(require("./routes/taskAgentVoice.routes"));
 const emailSequence_routes_1 = __importDefault(require("./routes/emailSequence.routes"));
 const rateLimit_middleware_1 = require("./middlewares/rateLimit.middleware");
 const error_middleware_1 = require("./middlewares/error.middleware");
 const env_1 = require("./config/env");
 const app = (0, express_1.default)();
 app.set("trust proxy", 1);
+const ALLOWED_ORIGINS = new Set([
+    "https://www.unidevsolutions.in",
+    "https://unidevsolutions.in",
+    "https://dashboard-unidev.vercel.app",
+    "https://api.unidevsolutions.in",
+    "https://www.api.unidevsolutions.in",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]);
 const corsOptions = {
-    origin: [
-        "https://www.unidevsolutions.in",
-        "https://unidevsolutions.in",
-        "https://dashboard-unidev.vercel.app",
-        "https://api.unidevsolutions.in",
-        "https://www.api.unidevsolutions.in",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    // Allow browser origins from the allowlist; also allow React Native / mobile
+    // clients which send no Origin header at all (origin === undefined).
+    origin: (origin, cb) => {
+        if (!origin || ALLOWED_ORIGINS.has(origin)) {
+            cb(null, true);
+        }
+        else {
+            cb(new Error(`CORS: origin '${origin}' not allowed`));
+        }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,
@@ -85,6 +96,8 @@ app.use("/api/mail", rateLimit_middleware_1.apiRateLimiter, dashboardEmail_route
 app.use("/api/emails", rateLimit_middleware_1.apiRateLimiter, dashboardEmail_routes_1.default);
 // AI Content Generator
 app.use("/api/ai", rateLimit_middleware_1.apiRateLimiter, aiContent_routes_1.default);
+// Task Manager Voice Agent (OpenAI Realtime)
+app.use("/api/task-agent-voice", rateLimit_middleware_1.apiRateLimiter, taskAgentVoice_routes_1.default);
 // Email Sequences — both paths supported
 app.use("/api/sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
 app.use("/api/email-sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
