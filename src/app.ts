@@ -18,6 +18,7 @@ import categoryRoutes from "./routes/category.routes";
 import leadRoutes from "./routes/lead.routes";
 import dashboardEmailRoutes from "./routes/dashboardEmail.routes";
 import aiContentRoutes from "./routes/aiContent.routes";
+import taskAgentVoiceRoutes from "./routes/taskAgentVoice.routes";
 import emailSequenceRoutes from "./routes/emailSequence.routes";
 import { apiRateLimiter } from "./middlewares/rateLimit.middleware";
 import {
@@ -30,16 +31,26 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+const ALLOWED_ORIGINS = new Set([
+  "https://www.unidevsolutions.in",
+  "https://unidevsolutions.in",
+  "https://dashboard-unidev.vercel.app",
+  "https://api.unidevsolutions.in",
+  "https://www.api.unidevsolutions.in",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+]);
+
 const corsOptions = {
-  origin: [
-    "https://www.unidevsolutions.in",
-    "https://unidevsolutions.in",
-    "https://dashboard-unidev.vercel.app",
-    "https://api.unidevsolutions.in",
-    "https://www.api.unidevsolutions.in",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ],
+  // Allow browser origins from the allowlist; also allow React Native / mobile
+  // clients which send no Origin header at all (origin === undefined).
+  origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || ALLOWED_ORIGINS.has(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`CORS: origin '${origin}' not allowed`));
+    }
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
@@ -102,6 +113,9 @@ app.use("/api/emails", apiRateLimiter, dashboardEmailRoutes);
 
 // AI Content Generator
 app.use("/api/ai", apiRateLimiter, aiContentRoutes);
+
+// Task Manager Voice Agent (OpenAI Realtime)
+app.use("/api/task-agent-voice", apiRateLimiter, taskAgentVoiceRoutes);
 
 // Email Sequences — both paths supported
 app.use("/api/sequences",       apiRateLimiter, emailSequenceRoutes);

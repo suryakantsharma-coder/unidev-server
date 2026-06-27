@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { generateContent, getAiContentByLead, listAiContent } from '../services/aiContent.service';
+import { analyzePatterns } from '../services/aiAnalyze.service';
+import { aiChat } from '../services/aiChat.service';
 
 const leadContextSchema = z.object({
   businessName:   z.string().optional(),
@@ -52,6 +54,69 @@ export async function getByLead(req: Request, res: Response, next: NextFunction)
   try {
     const data = await getAiContentByLead(req.params.leadId);
     res.json({ success: true, total: data.length, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+const taskSchema = z.object({
+  title:       z.string(),
+  completedAt: z.string(),
+  dayOfWeek:   z.string(),
+  category:    z.string(),
+  repeat:      z.string(),
+});
+
+const reminderSchema = z.object({
+  title:        z.string(),
+  category:     z.string(),
+  completedAt:  z.string(),
+  snoozedCount: z.number(),
+  dayOfWeek:    z.string(),
+});
+
+const analyzeSchema = z.object({
+  userId: z.string(),
+  patterns: z.object({
+    tasks:     z.array(taskSchema),
+    reminders: z.array(reminderSchema),
+    stats: z.object({
+      totalTasksThisWeek:    z.number(),
+      completedTasksThisWeek: z.number(),
+      categoryBreakdown:     z.record(z.number()),
+      mostProductiveDay:     z.string(),
+      mostProductiveHour:    z.number(),
+      avgCompletionRate:     z.number(),
+    }),
+  }),
+});
+
+export async function analyze(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { patterns } = analyzeSchema.parse(req.body);
+    const suggestions  = await analyzePatterns(patterns);
+    res.json({ suggestions });
+  } catch (err) {
+    next(err);
+  }
+}
+
+const chatSchema = z.object({
+  userId: z.string(),
+  message: z.string().min(1),
+  conversationHistory: z.array(
+    z.object({
+      role:    z.enum(['user', 'assistant']),
+      content: z.string(),
+    })
+  ).optional().default([]),
+});
+
+export async function chat(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { message, conversationHistory } = chatSchema.parse(req.body);
+    const result = await aiChat(message, conversationHistory);
+    res.json(result);
   } catch (err) {
     next(err);
   }
