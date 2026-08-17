@@ -35,6 +35,7 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.unidevsolutions.in",
   "https://unidevsolutions.in",
   "https://dashboard-unidev.vercel.app",
+  "dashboard.unidevsolutions.in",
   "https://api.unidevsolutions.in",
   "https://www.api.unidevsolutions.in",
   "http://localhost:3000",

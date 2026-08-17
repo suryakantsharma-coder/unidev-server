@@ -6,11 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorMiddleware = errorMiddleware;
 exports.notFoundMiddleware = notFoundMiddleware;
 const mongoose_1 = __importDefault(require("mongoose"));
+const zod_1 = require("zod");
 const env_1 = require("../config/env");
 function getStatusCode(err) {
     if (err.statusCode && err.statusCode >= 400 && err.statusCode < 600) {
         return err.statusCode;
     }
+    if (err instanceof zod_1.ZodError)
+        return 400;
     if (err.name === 'ValidationError')
         return 400;
     if (err instanceof mongoose_1.default.Error.ValidationError)
@@ -25,6 +28,9 @@ function getStatusCode(err) {
     return 500;
 }
 function getMessage(err) {
+    if (err instanceof zod_1.ZodError) {
+        return err.issues.map((issue) => issue.message).join(', ');
+    }
     if (env_1.env.isProduction && (err.statusCode ?? 500) >= 500) {
         return 'Internal server error';
     }

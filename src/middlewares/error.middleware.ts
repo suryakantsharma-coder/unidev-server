@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
+import { ZodError } from 'zod';
 import { env } from '../config/env';
 import { ApiErrorResponse } from '../types/chat.types';
 
@@ -11,6 +12,7 @@ function getStatusCode(err: AppError): number {
   if (err.statusCode && err.statusCode >= 400 && err.statusCode < 600) {
     return err.statusCode;
   }
+  if (err instanceof ZodError) return 400;
   if (err.name === 'ValidationError') return 400;
   if (err instanceof mongoose.Error.ValidationError) return 400;
   if (err instanceof mongoose.Error.CastError) return 400;
@@ -21,6 +23,9 @@ function getStatusCode(err: AppError): number {
 }
 
 function getMessage(err: AppError): string {
+  if (err instanceof ZodError) {
+    return err.issues.map((issue) => issue.message).join(', ');
+  }
   if (env.isProduction && (err.statusCode ?? 500) >= 500) {
     return 'Internal server error';
   }
