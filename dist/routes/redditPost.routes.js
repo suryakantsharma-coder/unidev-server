@@ -14,10 +14,25 @@ function requireApiKey(req, res, next) {
     }
     next();
 }
+// Accepts either the shared API key (for n8n / curl checks) or a dashboard JWT
+function requireApiKeyOrAuth(req, res, next) {
+    const key = req.headers['x-api-key'];
+    if (env_1.env.SCRAPER_API_KEY && key === env_1.env.SCRAPER_API_KEY) {
+        next();
+        return;
+    }
+    void (0, auth_middleware_1.authMiddleware)(req, res, (err) => {
+        if (err) {
+            next(err);
+            return;
+        }
+        (0, rbac_middleware_1.requireAgent)(req, res, next);
+    });
+}
 // Ingest — called by the scraper directly, authenticated with a shared API key
 router.post('/bulk', requireApiKey, redditPost_controller_1.bulkIngest);
-// Reads — dashboard-facing, standard JWT auth
-router.get('/', auth_middleware_1.authMiddleware, rbac_middleware_1.requireAgent, redditPost_controller_1.list);
-router.get('/:id', auth_middleware_1.authMiddleware, rbac_middleware_1.requireAgent, redditPost_controller_1.getOne);
+// Reads — API key (n8n/curl) or dashboard JWT
+router.get('/', requireApiKeyOrAuth, redditPost_controller_1.list);
+router.get('/:id', requireApiKeyOrAuth, redditPost_controller_1.getOne);
 exports.default = router;
 //# sourceMappingURL=redditPost.routes.js.map

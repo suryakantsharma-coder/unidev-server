@@ -15,11 +15,24 @@ function requireApiKey(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
+// Accepts either the shared API key (for n8n / curl checks) or a dashboard JWT
+function requireApiKeyOrAuth(req: Request, res: Response, next: NextFunction): void {
+  const key = req.headers['x-api-key'];
+  if (env.SCRAPER_API_KEY && key === env.SCRAPER_API_KEY) {
+    next();
+    return;
+  }
+  void authMiddleware(req, res, (err?: unknown) => {
+    if (err) { next(err); return; }
+    requireAgent(req, res, next);
+  });
+}
+
 // Ingest — called by the scraper directly, authenticated with a shared API key
 router.post('/bulk', requireApiKey, bulkIngest);
 
-// Reads — dashboard-facing, standard JWT auth
-router.get('/', authMiddleware, requireAgent, list);
-router.get('/:id', authMiddleware, requireAgent, getOne);
+// Reads — API key (n8n/curl) or dashboard JWT
+router.get('/', requireApiKeyOrAuth, list);
+router.get('/:id', requireApiKeyOrAuth, getOne);
 
 export default router;
