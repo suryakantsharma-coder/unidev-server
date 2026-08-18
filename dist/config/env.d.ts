@@ -28,5 +28,6 @@ export declare const env: {
     WHATSAPP_VERIFY_TOKEN: string;
     WHATSAPP_APP_SECRET: string;
     SEQUENCE_TEST_MODE: string;
+    SCRAPER_API_KEY: string;
 };
 //# sourceMappingURL=env.d.ts.map

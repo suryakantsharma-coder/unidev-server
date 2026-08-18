@@ -25,6 +25,7 @@ const dashboardEmail_routes_1 = __importDefault(require("./routes/dashboardEmail
 const aiContent_routes_1 = __importDefault(require("./routes/aiContent.routes"));
 const taskAgentVoice_routes_1 = __importDefault(require("./routes/taskAgentVoice.routes"));
 const emailSequence_routes_1 = __importDefault(require("./routes/emailSequence.routes"));
+const redditPost_routes_1 = __importDefault(require("./routes/redditPost.routes"));
 const rateLimit_middleware_1 = require("./middlewares/rateLimit.middleware");
 const error_middleware_1 = require("./middlewares/error.middleware");
 const env_1 = require("./config/env");
@@ -102,6 +103,8 @@ app.use("/api/task-agent-voice", rateLimit_middleware_1.apiRateLimiter, taskAgen
 // Email Sequences — both paths supported
 app.use("/api/sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
 app.use("/api/email-sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
+// Reddit scraper ingest
+app.use("/api/reddit-posts", rateLimit_middleware_1.apiRateLimiter, redditPost_routes_1.default);
 app.use(error_middleware_1.notFoundMiddleware);
 app.use(error_middleware_1.errorMiddleware);
 exports.default = app;

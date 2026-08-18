@@ -20,6 +20,7 @@ import dashboardEmailRoutes from "./routes/dashboardEmail.routes";
 import aiContentRoutes from "./routes/aiContent.routes";
 import taskAgentVoiceRoutes from "./routes/taskAgentVoice.routes";
 import emailSequenceRoutes from "./routes/emailSequence.routes";
+import redditPostRoutes from "./routes/redditPost.routes";
 import { apiRateLimiter } from "./middlewares/rateLimit.middleware";
 import {
   errorMiddleware,
@@ -121,6 +122,9 @@ app.use("/api/task-agent-voice", apiRateLimiter, taskAgentVoiceRoutes);
 // Email Sequences — both paths supported
 app.use("/api/sequences",       apiRateLimiter, emailSequenceRoutes);
 app.use("/api/email-sequences", apiRateLimiter, emailSequenceRoutes);
+
+// Reddit scraper ingest
+app.use("/api/reddit-posts", apiRateLimiter, redditPostRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

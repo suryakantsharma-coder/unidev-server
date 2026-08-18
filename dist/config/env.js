@@ -35,6 +35,8 @@ const envSchema = {
     WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET ?? '',
     // Email sequence test mode — when enabled, delays are in minutes instead of days
     SEQUENCE_TEST_MODE: process.env.SEQUENCE_TEST_MODE ?? '',
+    // Scraper ingest (e.g. Reddit posts) — shared secret for server-to-server calls
+    SCRAPER_API_KEY: process.env.SCRAPER_API_KEY ?? '',
 };
 exports.env = {
     ...envSchema,
