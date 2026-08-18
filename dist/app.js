@@ -69,6 +69,9 @@ const rateLimit = require("express-rate-limit");
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
+    // Reddit ingest has its own higher-throughput limiter below — skip the
+    // global cap here so large n8n batches don't get throttled by it first.
+    skip: (req) => req.path.startsWith("/api/reddit-posts"),
 }));
 app.use((0, morgan_1.default)(env_1.env.isProduction ? "combined" : "dev"));
 app.use(express_1.default.json({ limit: "1mb" }));
@@ -103,8 +106,8 @@ app.use("/api/task-agent-voice", rateLimit_middleware_1.apiRateLimiter, taskAgen
 // Email Sequences — both paths supported
 app.use("/api/sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
 app.use("/api/email-sequences", rateLimit_middleware_1.apiRateLimiter, emailSequence_routes_1.default);
-// Reddit scraper ingest
-app.use("/api/reddit-posts", rateLimit_middleware_1.apiRateLimiter, redditPost_routes_1.default);
+// Reddit scraper ingest — no rate limit; ingest is gated by API key instead
+app.use("/api/reddit-posts", redditPost_routes_1.default);
 app.use(error_middleware_1.notFoundMiddleware);
 app.use(error_middleware_1.errorMiddleware);
 exports.default = app;

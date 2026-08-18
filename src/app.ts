@@ -76,6 +76,9 @@ app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
+    // Reddit ingest has its own higher-throughput limiter below — skip the
+    // global cap here so large n8n batches don't get throttled by it first.
+    skip: (req: express.Request) => req.path.startsWith("/api/reddit-posts"),
   }),
 );
 app.use(morgan(env.isProduction ? "combined" : "dev"));
@@ -123,8 +126,8 @@ app.use("/api/task-agent-voice", apiRateLimiter, taskAgentVoiceRoutes);
 app.use("/api/sequences",       apiRateLimiter, emailSequenceRoutes);
 app.use("/api/email-sequences", apiRateLimiter, emailSequenceRoutes);
 
-// Reddit scraper ingest
-app.use("/api/reddit-posts", apiRateLimiter, redditPostRoutes);
+// Reddit scraper ingest — no rate limit; ingest is gated by API key instead
+app.use("/api/reddit-posts", redditPostRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
